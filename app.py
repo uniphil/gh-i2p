@@ -105,7 +105,9 @@ HTMLBLOB = """
           <input type="submit" id="submit" value="Convert"/>
         </form>
       {% else %}
-        <a href="login">Log in with GitHub</a>
+        <form id="login" action="login" method="get">
+          <input type="submit" value="Log in with GitHub"/>
+        </form>
       {% endif %}
     </main>
     <footer>Made by <a href="http://cmetcalfe.ca">Carey Metcalfe</a></footer>
@@ -158,7 +160,8 @@ def auth(oauth_token):
 
     try:
         data = github.get('user')
-        session['avatar_url'] = data['avatar_url'] + "size=100"
+        #session['avatar_url'] = data['avatar_url'] + "size=100"
+        session['username'] = data['login']
     except EnvironmentError as e:
         flash("Couldn't get user data: {0}".format(str(e)), "error")
 
