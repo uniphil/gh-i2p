@@ -49,6 +49,25 @@ HTMLBLOB = """
       right: 0;
       border: 0;
     }
+    div.flash {
+      border-radius: 10px;
+      -webkit-border-radius: 10px;
+      padding: 15px;
+      margin: 10px auto 10px auto;
+      border: 1px solid;
+      max-width: 300px;
+      width: 80%
+    }
+    div.error {
+      background-color: #F2DEDE;
+      border-color: #EBCCD1;
+      color: #A94442;
+    }
+    div.message {
+      background-color:#DFF0D8;
+      border-color: #D6E9C6;
+      color: #3C763D;
+    }
     footer {
       position: absolute;
       bottom: 50px;
@@ -63,14 +82,13 @@ HTMLBLOB = """
       <p>This service allows you to easily convert a GitHub issue to a pull request.</p>
       {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
-          <ul class=flashes>
           {% for c, m in messages %}
-            <li class="{{ c }}">{{ m }}</li>
+            <div class="flash {{ c }}">{{ m }}</div>
           {% endfor %}
-          </ul>
         {% endif %}
       {% endwith %}
       {% if session['github_access_token'] %}
+        <p>Signed in as {{ session['username'] }} (<a href="logout">logout</a>)</p>
         <form action="convert" method="post">
           <label for="repo">Repository:</label>
           <input type="text" id="repo" name="repo" placeholder="ex. pR0Ps/gh-i2p"/>
@@ -106,7 +124,6 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('github_access_token', None)
-    flash("Logged out")
     return redirect(url_for('index'))
 
 @app.route('/convert', methods=['POST'])
@@ -121,7 +138,7 @@ def convert():
         github.post("repos/{0}/pulls".format(url), data=params)
         flash("Pull request created!")
     except GitHubError as e:
-        flash("Error: {}".format(str(e)), 'error')
+        flash("Error from GitHub: {}".format(str(e)), 'error')
     return redirect(url_for("index"))
 
 @github.access_token_getter
@@ -142,7 +159,6 @@ def auth(oauth_token):
     try:
         data = github.get('user')
         session['avatar_url'] = data['avatar_url'] + "size=100"
-        flash("Signed in as {0}".format(data['login']))
     except EnvironmentError as e:
         flash("Couldn't get user data: {0}".format(str(e)), "error")
 
